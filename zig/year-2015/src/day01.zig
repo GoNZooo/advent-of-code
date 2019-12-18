@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const input1 = @embedFile("input-day01.txt");
+const input = @embedFile("input-day01.txt");
 
 fn calculateEndingFloor(directions: []const u8) i32 {
     var floor: i32 = 0;
@@ -31,6 +31,7 @@ fn calculateMinus1Iteration(directions: []const u8) usize {
 }
 
 pub fn main() anyerror!void {
-    std.debug.warn("Solution 1: {}\n", .{calculateEndingFloor(input1)});
-    std.debug.warn("Solution 2: {}\n", .{calculateMinus1Iteration(input1)});
+    std.debug.warn("Day 01:\n", .{});
+    std.debug.warn("\tSolution 1: {}\n", .{calculateEndingFloor(input)});
+    std.debug.warn("\tSolution 2: {}\n", .{calculateMinus1Iteration(input)});
 }
