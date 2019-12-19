@@ -32,3 +32,34 @@ pub fn removeMax(comptime length: usize, numbers: [length]u32) [length - 1]u32 {
 
     return new_array;
 }
+
+pub fn UnzipResult(comptime T: type) type {
+    return struct {
+        a: []T,
+        b: []T,
+    };
+}
+
+pub fn unzipMemory(comptime T: type, allocator: *mem.Allocator, memory: []const T) !UnzipResult(T) {
+    std.debug.assert(memory.len % 2 == 0);
+
+    const a = try allocator.alloc(T, memory.len / 2);
+    const b = try allocator.alloc(T, memory.len / 2);
+    var a_index: usize = 0;
+    var b_index: usize = 0;
+
+    for (memory) |x, i| {
+        if (i % 2 == 0) {
+            a[a_index] = x;
+            a_index += 1;
+        } else {
+            b[b_index] = x;
+            b_index += 1;
+        }
+    }
+
+    return UnzipResult(T){
+        .a = a,
+        .b = b,
+    };
+}
