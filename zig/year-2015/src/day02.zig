@@ -5,21 +5,9 @@ const math = std.math;
 
 const ArrayList = std.ArrayList;
 
+const utilities = @import("./utilities.zig");
+
 const input = @embedFile("input-day02.txt");
-
-const newline_delimiter = if (std.builtin.os == .windows) "\n" else "\n";
-
-fn splitIntoLines(allocator: *mem.Allocator, string: []const u8) ![]const []const u8 {
-    var lines = ArrayList([]const u8).init(allocator);
-    var newline_iterator = mem.separate(string, newline_delimiter);
-
-    while (newline_iterator.next()) |line| {
-        var trimmed_line = mem.trim(u8, line, "\n\r");
-        if (!mem.eql(u8, trimmed_line, "")) (try lines.append(line));
-    }
-
-    return lines.toSliceConst();
-}
 
 const Dimensions = struct {
     length: u32,
@@ -52,7 +40,7 @@ const Dimensions = struct {
     }
 
     pub fn wrappingRibbon(self: Dimensions) u32 {
-        const sides = removeMax(3, [_]u32{ self.length, self.width, self.height });
+        const sides = utilities.removeMax(3, [_]u32{ self.length, self.width, self.height });
         var ribbon: u32 = 0;
         for (sides) |s| {
             ribbon += s * 2;
@@ -105,28 +93,10 @@ fn calculateNeededRibbon(lines: []const []const u8) !u64 {
 
 pub fn main() anyerror!void {
     var allocator = &std.heap.ArenaAllocator.init(std.heap.page_allocator).allocator;
-    const lines = try splitIntoLines(allocator, input);
+    const lines = try utilities.splitIntoLines(allocator, input);
     const square_feet_of_paper = calculateNeededPaper(lines);
     const ribbon = calculateNeededRibbon(lines);
     std.debug.warn("Day 02:\n", .{});
     std.debug.warn("\tSolution 1: {}\n", .{square_feet_of_paper});
     std.debug.warn("\tSolution 2: {}\n", .{ribbon});
-}
-
-fn removeMax(comptime length: usize, numbers: [length]u32) [length - 1]u32 {
-    const max_number = mem.max(u32, &numbers);
-    var new_array = [_]u32{0} ** (length - 1);
-    var skipped = false;
-    var i: usize = 0;
-
-    for (numbers) |n| {
-        if (n != max_number or skipped) {
-            new_array[i] = n;
-            i += 1;
-        } else if (n == max_number) {
-            skipped = true;
-        }
-    }
-
-    return new_array;
 }
