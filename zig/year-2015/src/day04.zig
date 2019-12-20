@@ -42,17 +42,15 @@ fn buildConcatString(secret: []const u8, number: u32, buffer: []u8) ![]const u8 
 }
 
 fn firstNibblesInHex(comptime N: u8, slice: []u8) [N]u8 {
-    var nibbles = [_]u8{0} ** N;
+    var nibbles: [N]u8 = undefined;
     var current_nibble: u8 = 0;
 
     while (current_nibble < N) : (current_nibble += 1) {
         const index = current_nibble / 2;
         if (current_nibble % 2 == 0) {
-            const c = (slice[index] & 0b11110000) >> 4;
-            nibbles[current_nibble] = c;
+            nibbles[current_nibble] = (slice[index] & 0xf0) >> 4;
         } else {
-            const c = slice[index] & 0b1111;
-            nibbles[current_nibble] = c;
+            nibbles[current_nibble] = slice[index] & 0xf;
         }
     }
 
@@ -60,7 +58,6 @@ fn firstNibblesInHex(comptime N: u8, slice: []u8) [N]u8 {
 }
 
 test "digest for test_input1 is correct" {
-    var allocator = &std.heap.ArenaAllocator.init(std.heap.page_allocator).allocator;
     const test_success_i: u32 = 609043;
     var digest_bytes: [16]u8 = undefined;
     var success_test_input = [_]u8{0} ** 32;
