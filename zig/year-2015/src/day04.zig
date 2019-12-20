@@ -27,7 +27,7 @@ fn findInitialZeroes(comptime N: u8, digest_bytes: []u8, concat_buffer: []u8) !u
     while (true) : (n += 1) {
         var concatted_string = try buildConcatString(input, n, concat_buffer);
         Md5.hash(concatted_string, digest_bytes);
-        const initial = firstNibblesInHex(N, digest_bytes);
+        const initial = firstNibbles(N, digest_bytes);
 
         if (mem.eql(u8, &initial, &([_]u8{0} ** N))) {
             break;
@@ -41,7 +41,7 @@ fn buildConcatString(secret: []const u8, number: u32, buffer: []u8) ![]const u8 
     return try fmt.bufPrint(buffer, "{}{}", .{ secret, number });
 }
 
-fn firstNibblesInHex(comptime N: u8, slice: []u8) [N]u8 {
+fn firstNibbles(comptime N: u8, slice: []u8) [N]u8 {
     var nibbles: [N]u8 = undefined;
     var current_nibble: u8 = 0;
 
@@ -69,6 +69,6 @@ test "digest for test_input1 is correct" {
 
     Md5.hash(total_test_input, &digest_bytes);
 
-    var first_5 = firstNibblesInHex(5, &digest_bytes);
+    var first_5 = firstNibbles(5, &digest_bytes);
     testing.expectEqualSlices(u8, &first_5, &([_]u8{0} ** 5));
 }
