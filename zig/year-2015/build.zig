@@ -1,10 +1,11 @@
 const Builder = @import("std").build.Builder;
 
-const files = [_]*const [5:0]u8{ "day01", "day02", "day03", "day04" };
+const files = [_]*const [5:0]u8{ "day01", "day02", "day03", "day04", "day05" };
 
 fn addExecutables(b: *Builder) void {
     const mode = b.standardReleaseOptions();
     const run_step = b.step("run", "Run the app");
+    const test_step = b.step("test", "Test the app");
 
     inline for (files) |f| {
         const exe = b.addExecutable(f, "src/" ++ f ++ ".zig");
@@ -13,6 +14,12 @@ fn addExecutables(b: *Builder) void {
         const run_cmd = exe.run();
         run_cmd.step.dependOn(b.getInstallStep());
         run_step.dependOn(&run_cmd.step);
+    }
+
+    inline for (files) |f| {
+        var tests = b.addTest("src/" ++ f ++ ".zig");
+        tests.setBuildMode(mode);
+        test_step.dependOn(&tests.step);
     }
 }
 
