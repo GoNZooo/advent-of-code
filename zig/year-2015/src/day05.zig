@@ -103,18 +103,6 @@ fn isVowel(c: u8) bool {
     };
 }
 
-test "solution 1 is correct" {
-    var lines = try utilities.splitIntoLines(page_allocator, input);
-    const solution_1 = try solution1(std.heap.page_allocator, lines);
-    testing.expectEqual(solution_1, 258);
-}
-
-test "solution 2 is correct" {
-    var lines = try utilities.splitIntoLines(page_allocator, input);
-    const solution_2 = solution2(lines);
-    testing.expectEqual(solution_2, 53);
-}
-
 test "reports are correct for `hasThreeVowels`" {
     testing.expect(try hasThreeVowels(page_allocator, "aei"));
     testing.expect(try hasThreeVowels(page_allocator, "xazegov"));
