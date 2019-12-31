@@ -15,6 +15,37 @@ pub fn splitIntoLines(allocator: *mem.Allocator, string: []const u8) ![]const []
     return lines.toSliceConst();
 }
 
+pub fn filterSlice(
+    comptime T: type,
+    allocator: *mem.Allocator,
+    slice: []const T,
+    predicate: fn (x: T) bool,
+) ![]T {
+    var filtered = try allocator.alloc(T, slice.len);
+    var matching: usize = 0;
+    for (slice) |x| {
+        if (predicate(x)) {
+            filtered[matching] = x;
+            matching += 1;
+        }
+    }
+    filtered = allocator.shrink(filtered, matching);
+
+    return filtered;
+}
+
+pub fn containsSlice(comptime T: type, haystack: []const T, needle: []const T) bool {
+    return mem.indexOf(T, haystack, needle) != null;
+}
+
+pub fn containsAnyOf(comptime T: type, haystack: []const T, needles: []const []const T) bool {
+    for (needles) |needle| {
+        if (containsSlice(T, haystack, needle)) return true;
+    }
+
+    return false;
+}
+
 pub fn removeMax(comptime length: usize, numbers: [length]u32) [length - 1]u32 {
     const max_number = mem.max(u32, &numbers);
     var new_array = [_]u32{0} ** (length - 1);
