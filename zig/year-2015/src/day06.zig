@@ -1,5 +1,6 @@
 const std = @import("std");
 const testing = std.testing;
+const mem = std.mem;
 
 const utilities = @import("./utilities.zig");
 
@@ -58,10 +59,73 @@ fn countLights(comptime L: usize, lights: [L][L]bool) usize {
     return count;
 }
 
+const CoordinatePair = struct {
+    c1: Coordinates,
+    c2: Coordinates,
+};
+
+const Command = union(enum) {
+    TurnOn: CoordinatePair,
+    TurnOff: CoordinatePair,
+    Toggle: CoordinatePair,
+
+    pub fn fromLine(line: []const u8) !Command {
+        var tokens = mem.tokenize(line, " ");
+        const initial_token = tokens.next().?;
+        if (mem.eql(u8, initial_token, "turn")) {
+            const onOrOff = tokens.next().?;
+            if (mem.eql(u8, onOrOff, "on")) {
+                const c1 = tokens.next().?;
+                _ = tokens.next().?;
+                const c2 = tokens.next().?;
+
+                return Command{
+                    .TurnOn = CoordinatePair{
+                        .c1 = try constructCoordinates(c1),
+                        .c2 = try constructCoordinates(c2),
+                    },
+                };
+            } else if (mem.eql(u8, onOrOff, "off")) {
+                const c1 = tokens.next().?;
+                _ = tokens.next().?;
+                const c2 = tokens.next().?;
+
+                return Command{
+                    .TurnOff = CoordinatePair{
+                        .c1 = try constructCoordinates(c1),
+                        .c2 = try constructCoordinates(c2),
+                    },
+                };
+            }
+        } else if (mem.eql(u8, initial_token, "toggle")) {
+            const c1 = tokens.next().?;
+            _ = tokens.next().?;
+            const c2 = tokens.next().?;
+
+            return Command{
+                .Toggle = CoordinatePair{
+                    .c1 = try constructCoordinates(c1),
+                    .c2 = try constructCoordinates(c2),
+                },
+            };
+        }
+
+        return error.InvalidInitialToken;
+    }
+};
+
+fn constructCoordinates(string: []const u8) !Coordinates {
+    var it = mem.separate(string, ",");
+    const x = try std.fmt.parseInt(usize, it.next().?, 10);
+    const y = try std.fmt.parseInt(usize, it.next().?, 10);
+
+    return Coordinates{ .x = x, .y = y };
+}
+
 test "input file is parsed correctly" {
     const lines = try utilities.splitIntoLines(std.heap.page_allocator, input);
     for (lines) |line| {
-        std.debug.warn("line: {}\n", .{line});
+        const command = try Command.fromLine(line);
     }
 }
 
