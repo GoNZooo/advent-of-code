@@ -99,7 +99,7 @@ const Instruction = union(enum) {
             return Instruction{ .RSHIFT = ShiftData{ .operand = left_operand, .shift = shift } };
         }
 
-        return error.ParsingFailed;
+        return error.UnableToParseInstruction;
     }
 };
 
