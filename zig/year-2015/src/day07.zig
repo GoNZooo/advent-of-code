@@ -31,7 +31,7 @@ const Operation = struct {
     destination: []const u8,
 
     pub fn fromLine(line: []const u8) !Operation {
-        var it = mem.separate(line, "->");
+        var it = mem.separate(line, " -> ");
         const left_hand = it.next().?;
         const instruction = try Instruction.fromString(left_hand);
         const destination = it.next().?;
