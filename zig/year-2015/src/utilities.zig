@@ -64,6 +64,14 @@ pub fn removeMax(comptime length: usize, numbers: [length]u32) [length - 1]u32 {
     return new_array;
 }
 
+pub fn all(comptime T: type, ts: []const T, p: fn (t: T) bool) bool {
+    for (ts) |t| {
+        if (!p(t)) return false;
+    }
+
+    return true;
+}
+
 pub fn UnzipResult(comptime T: type) type {
     return struct {
         a: []T,
