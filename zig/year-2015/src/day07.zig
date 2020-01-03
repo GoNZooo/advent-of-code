@@ -221,7 +221,6 @@ const Store = struct {
         }
 
         const instruction = self.get(destination);
-        // debug.warn("{} -> {}\n", .{ instruction, destination });
 
         return switch (instruction) {
             .Value => |op| try self.evaluateOperand(op),
@@ -240,7 +239,6 @@ const Store = struct {
                 const cached_value = self.cache.getValue(id);
 
                 if (cached_value) |value| {
-                    // debug.warn("have cached value ({}) for '{}'\n", .{ value, id });
                     break :ret value;
                 } else {
                     const v = try self.execute(id);

@@ -19,8 +19,8 @@ pub fn main() anyerror!void {
     std.debug.warn("Day 06:\n", .{});
 
     var bool_lights = initialLights(1000, bool, false);
-    var lines1 = try utilities.splitIntoLines(std.heap.page_allocator, input);
-    for (lines1) |line| {
+    const lines = try utilities.splitIntoLines(std.heap.page_allocator, input);
+    for (lines) |line| {
         const command = try Command.fromLine(line);
         switch (command) {
             .TurnOn => |cs| turnOn(1000, &bool_lights, cs.c1, cs.c2),
@@ -33,8 +33,7 @@ pub fn main() anyerror!void {
     std.debug.warn("\tSolution 1: {}\n", .{solution_1_count});
 
     var u32_lights = initialLights(1000, u32, 0);
-    var lines2 = try utilities.splitIntoLines(std.heap.page_allocator, input);
-    for (lines2) |line| {
+    for (lines) |line| {
         const command = try Command.fromLine(line);
         switch (command) {
             .TurnOn => |cs| raise(1000, &u32_lights, cs.c1, cs.c2),
