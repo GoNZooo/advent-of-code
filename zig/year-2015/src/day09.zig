@@ -61,6 +61,22 @@ const DistanceSpec = struct {
     }
 };
 
+test "creates top-level route map from test input" {
+    const lines = try utilities.splitIntoLines(heap.page_allocator, test_input);
+    var route_map = Routes.init(heap.page_allocator);
+    for (lines) |line| {
+        const distance_spec = try DistanceSpec.fromLine(line);
+        try route_map.addRoute(distance_spec.a, distance_spec.b, distance_spec.distance);
+    }
+
+    testing.expectEqual(route_map.routes.count(), 3);
+
+    var it = route_map.routes.iterator();
+    while (it.next()) |entry| {
+        testing.expectEqual(entry.value.count(), 2);
+    }
+}
+
 test "creates top-level route map" {
     const lines = try utilities.splitIntoLines(heap.page_allocator, input);
     var route_map = Routes.init(heap.page_allocator);
