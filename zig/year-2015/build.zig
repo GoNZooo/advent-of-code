@@ -1,6 +1,15 @@
 const Builder = @import("std").build.Builder;
 
-const files = [_]*const [5:0]u8{ "day01", "day02", "day03", "day04", "day05", "day06", "day07" };
+const files = [_]*const [5:0]u8{
+    "day01",
+    "day02",
+    "day03",
+    "day04",
+    "day05",
+    "day06",
+    "day07",
+    "day08",
+};
 
 fn addExecutables(b: *Builder) void {
     const mode = b.standardReleaseOptions();
