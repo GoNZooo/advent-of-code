@@ -12,20 +12,16 @@ pub fn main() anyerror!void {
 
     const lines = try utilities.splitIntoLines(std.heap.page_allocator, input);
 
-    const solution_1 = encodingAndContentDifference(lines);
+    const solution_1 = contentDifference(lines);
     debug.warn("\tSolution 1: {}\n", .{solution_1});
 
-    const solution_2 = "not solved";
+    const solution_2 = encodingDifference(lines);
     debug.warn("\tSolution 2: {}\n", .{solution_2});
 }
 
 const Size = struct {
     encoding: usize,
     content: usize,
-
-    pub fn fromString(string: []const u8) Size {
-        return stringSize(string);
-    }
 };
 
 const StringIterator = struct {
@@ -69,16 +65,47 @@ const StringIterator = struct {
     }
 };
 
-fn encodingAndContentDifference(strings: []const []const u8) usize {
+fn contentDifference(strings: []const []const u8) usize {
     var total_encoding: usize = 0;
     var total_content: usize = 0;
     for (strings) |string| {
-        const line_size = Size.fromString(string);
+        const line_size = stringSize(string);
         total_encoding += line_size.encoding;
         total_content += line_size.content;
     }
 
     return total_encoding - total_content;
+}
+
+fn encodingDifference(strings: []const []const u8) usize {
+    var total_encoding: usize = 0;
+    var total_content: usize = 0;
+    for (strings) |string| {
+        const line_size = encodingSize(string);
+        total_encoding += line_size.encoding;
+        total_content += line_size.content;
+    }
+
+    return total_encoding - total_content;
+}
+
+fn encodingSize(string: []const u8) Size {
+    var encoding: usize = 2;
+
+    var it = StringIterator.fromSlice(string);
+    while (it.next()) |c| {
+        switch (c) {
+            '\\' => {
+                encoding += 2;
+            },
+            '\"' => {
+                encoding += 2;
+            },
+            else => encoding += 1,
+        }
+    }
+
+    return Size{ .encoding = encoding, .content = string.len };
 }
 
 fn stringSize(string: []const u8) Size {
@@ -137,15 +164,51 @@ test "aaa\"aaa" {
 test "works on total test input" {
     const lines = try utilities.splitIntoLines(std.heap.page_allocator, test_input);
 
-    const difference = encodingAndContentDifference(lines);
+    const difference = contentDifference(lines);
     testing.expectEqual(difference, 12);
 }
 
 test "works on total input" {
     const lines = try utilities.splitIntoLines(std.heap.page_allocator, input);
 
-    const difference = encodingAndContentDifference(lines);
+    const difference = contentDifference(lines);
     testing.expectEqual(difference, 1342);
+}
+
+test "encoding difference for empty string" {
+    const size = encodingSize("\"\"");
+    testing.expectEqual(size.encoding, 6);
+    testing.expectEqual(size.content, 2);
+}
+
+test "encoding difference for \"abc\"" {
+    const size = encodingSize("\"abc\"");
+    testing.expectEqual(size.encoding, 9);
+    testing.expectEqual(size.content, 5);
+}
+
+test "encoding difference for \"aaa\"aaa\"" {
+    const size = encodingSize("\"aaa\\\"aaa\"");
+    testing.expectEqual(size.encoding, 16);
+    testing.expectEqual(size.content, 10);
+}
+
+test "encoding difference for \"\\x27\"" {
+    const size = encodingSize("\"\\x27\"");
+    testing.expectEqual(size.encoding, 11);
+    testing.expectEqual(size.content, 6);
+}
+
+test "encoding difference works on test input" {
+    const lines = try utilities.splitIntoLines(std.heap.page_allocator, test_input);
+    const difference = encodingDifference(lines);
+    testing.expectEqual(difference, 19);
+}
+
+test "encoding difference works on input" {
+    const lines = try utilities.splitIntoLines(std.heap.page_allocator, input);
+    const difference = encodingDifference(lines);
+    testing.expectEqual(difference, 2074);
 }
 
 const test_input =
