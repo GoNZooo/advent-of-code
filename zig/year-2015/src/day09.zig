@@ -15,3 +15,9 @@ test "reads input" {
         debug.warn("line: {}\n", .{line});
     }
 }
+
+const test_input =
+    \\London to Dublin = 464
+    \\London to Belfast = 518
+    \\Dublin to Belfast = 141
+;
