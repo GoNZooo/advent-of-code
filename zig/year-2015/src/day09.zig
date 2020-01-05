@@ -75,6 +75,10 @@ test "creates top-level route map from test input" {
     while (it.next()) |entry| {
         testing.expectEqual(entry.value.count(), 2);
     }
+
+    for (test_places) |place| {
+        testing.expect(route_map.routes.contains(place));
+    }
 }
 
 test "creates top-level route map" {
@@ -91,9 +95,27 @@ test "creates top-level route map" {
     var it = route_map.routes.iterator();
     while (it.next()) |entry| {
         // ensure all those 7 starting points have 7 destinations
+        debug.warn("{}\n", .{entry.key});
         testing.expectEqual(entry.value.count(), 7);
     }
+
+    for (places) |place| {
+        testing.expect(route_map.routes.contains(place));
+    }
 }
+
+const places = [_][]const u8{
+    "AlphaCentauri",
+    "Snowdin",
+    "Tambi",
+    "Faerun",
+    "Norrath",
+    "Straylight",
+    "Tristram",
+    "Arbre",
+};
+
+const test_places = [_][]const u8{ "London", "Belfast", "Dublin" };
 
 const test_input =
     \\London to Dublin = 464
