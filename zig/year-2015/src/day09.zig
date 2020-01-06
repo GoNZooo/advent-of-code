@@ -95,7 +95,6 @@ test "creates top-level route map" {
     var it = route_map.routes.iterator();
     while (it.next()) |entry| {
         // ensure all those 7 starting points have 7 destinations
-        debug.warn("{}\n", .{entry.key});
         testing.expectEqual(entry.value.count(), 7);
     }
 
