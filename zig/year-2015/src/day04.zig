@@ -14,10 +14,10 @@ pub fn main() anyerror!void {
 
     std.debug.warn("Day 04:\n", .{});
 
-    var solution_1 = try findInitialZeroes(5, &digest_bytes, &concat_buffer);
+    const solution_1 = try findInitialZeroes(5, &digest_bytes, &concat_buffer);
     std.debug.warn("\tSolution 1: {}\n", .{solution_1});
 
-    var solution_2 = try findInitialZeroes(6, &digest_bytes, &concat_buffer);
+    const solution_2 = try findInitialZeroes(6, &digest_bytes, &concat_buffer);
     std.debug.warn("\tSolution 2: {}\n", .{solution_2});
 }
 
@@ -25,7 +25,7 @@ fn findInitialZeroes(comptime N: u8, digest_bytes: []u8, concat_buffer: []u8) !u
     var n: u32 = 0;
 
     while (true) : (n += 1) {
-        var concatted_string = try buildConcatString(input, n, concat_buffer);
+        const concatted_string = try buildConcatString(input, n, concat_buffer);
         Md5.hash(concatted_string, digest_bytes);
         const initial = firstNibbles(N, digest_bytes);
 
@@ -61,7 +61,7 @@ test "digest for test_input1 is correct" {
     const test_success_i: u32 = 609043;
     var digest_bytes: [16]u8 = undefined;
     var success_test_input = [_]u8{0} ** 32;
-    var total_test_input = try fmt.bufPrint(
+    const total_test_input = try fmt.bufPrint(
         &success_test_input,
         "{}{}",
         .{ test_input, test_success_i },
@@ -69,6 +69,6 @@ test "digest for test_input1 is correct" {
 
     Md5.hash(total_test_input, &digest_bytes);
 
-    var first_5 = firstNibbles(5, &digest_bytes);
+    const first_5 = firstNibbles(5, &digest_bytes);
     testing.expectEqualSlices(u8, &first_5, &([_]u8{0} ** 5));
 }
