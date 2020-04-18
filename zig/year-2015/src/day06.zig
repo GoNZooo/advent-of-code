@@ -235,7 +235,7 @@ const Command = union(enum) {
 };
 
 fn constructCoordinates(string: []const u8) !Coordinates {
-    var it = mem.separate(string, ",");
+    var it = mem.split(string, ",");
     const x = try std.fmt.parseInt(usize, it.next().?, 10);
     const y = try std.fmt.parseInt(usize, it.next().?, 10);
 

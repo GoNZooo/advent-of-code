@@ -50,7 +50,7 @@ const DistanceSpec = struct {
     distance: u32,
 
     pub fn fromLine(line: []const u8) !DistanceSpec {
-        var it = mem.separate(line, " ");
+        var it = mem.split(line, " ");
         const a = it.next().?;
         _ = it.next();
         const b = it.next().?;

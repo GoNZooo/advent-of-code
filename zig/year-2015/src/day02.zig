@@ -54,7 +54,7 @@ const Dimensions = struct {
     }
 
     pub fn fromLine(line: []const u8) !Dimensions {
-        var split_iterator = mem.separate(line, "x");
+        var split_iterator = mem.split(line, "x");
         const length_string = split_iterator.next() orelse unreachable;
         const width_string = split_iterator.next() orelse unreachable;
         const height_string = split_iterator.next() orelse unreachable;
