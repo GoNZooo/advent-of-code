@@ -110,10 +110,6 @@ fn MostCommon(comptime N: usize) type {
             return character;
         }
 
-        // fn getPassword(self: Self) [N]u8 {
-        //     return "hello";
-        // }
-
         fn addLines(self: *Self, lines: []const []const u8) !void {
             for (lines) |line| {
                 try self.addLine(mem.trim(u8, line, " \r\n"));
