@@ -2,6 +2,7 @@ const Builder = @import("std").build.Builder;
 
 const files = [_]*const [5:0]u8{
     "day05",
+    "day06",
 };
 
 fn addExecutables(b: *Builder) void {
