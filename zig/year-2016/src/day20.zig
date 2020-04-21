@@ -62,17 +62,13 @@ fn linesToRanges(allocator: *mem.Allocator, lines: []const []const u8) ![]const 
 }
 
 fn allowedIps(allocator: *mem.Allocator, blacklisted: []const Range, upper_bound: usize) !usize {
-    // using `u8` here is like 1.6x as fast as `bool` and since they use the
-    // same amount of memory it doesn't make sense to use `bool`
+    // Using `u8` here is like 1.6x as fast as `bool` and since they use the
+    // same amount of memory it doesn't make sense to use `bool`.
+    // Not freeing because it's needless in this program, by the way.
     var allowed = try allocator.alloc(u8, upper_bound);
-    for (allowed) |*a| {
-        a.* = 1;
-    }
+    mem.set(u8, allowed, 1);
     for (blacklisted) |r| {
-        var i: usize = r.start;
-        while (i <= r.end) : (i += 1) {
-            allowed[i] = 0;
-        }
+        mem.set(u8, allowed[r.start..(r.end + 1)], 0);
     }
 
     var allowed_count: usize = 0;
