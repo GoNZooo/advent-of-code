@@ -5,6 +5,7 @@ const files = [_]*const [5:0]u8{
     "day06",
     "day07",
     "day09",
+    "day12",
 };
 
 fn addExecutables(b: *Builder) void {
