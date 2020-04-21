@@ -39,26 +39,6 @@ const test_input =
 const Register = u8;
 const Offset = i32;
 
-const CopySource = union(enum) {
-    Register: Register,
-    Value: i32,
-};
-
-const CopyData = struct {
-    source: CopySource,
-    destination: Register,
-};
-
-const JumpComparator = union(enum) {
-    Register: Register,
-    Value: i32,
-};
-
-const JumpIfNotZeroData = struct {
-    comparator: JumpComparator,
-    offset: Offset,
-};
-
 const Instruction = union(enum) {
     const Self = @This();
 
@@ -127,8 +107,6 @@ const Instruction = union(enum) {
         } else {
             return error.UnknownInstruction;
         }
-
-        return Self{ .Increment = 'a' };
     }
 
     pub fn format(
@@ -182,6 +160,26 @@ const Instruction = union(enum) {
             },
         };
     }
+};
+
+const CopyData = struct {
+    source: CopySource,
+    destination: Register,
+};
+
+const JumpIfNotZeroData = struct {
+    comparator: JumpComparator,
+    offset: Offset,
+};
+
+const CopySource = union(enum) {
+    Register: Register,
+    Value: i32,
+};
+
+const JumpComparator = union(enum) {
+    Register: Register,
+    Value: i32,
 };
 
 fn isRegister(s: []const u8) bool {
