@@ -5,6 +5,8 @@ const mem = std.mem;
 const testing = std.testing;
 const fmt = std.fmt;
 
+const String = @import("./string.zig").String;
+
 const utilities = @import("./utilities.zig");
 
 const input = @embedFile("input-day21.txt");
@@ -19,6 +21,145 @@ const test_input =
     \\rotate based on position of letter b
     \\rotate based on position of letter d
 ;
+
+pub fn main() anyerror!void {
+    debug.warn("Day 21:\n", .{});
+    var allocator = &heap.ArenaAllocator.init(heap.page_allocator).allocator;
+    const lines = try utilities.splitIntoLines(heap.page_allocator, input);
+
+    var program_1 = try Program.init(allocator, lines, "abcdefgh");
+    try program_1.run();
+    const solution_1 = program_1.state;
+    debug.warn("\tSolution 1: {}", .{solution_1});
+}
+
+const Program = struct {
+    const Self = @This();
+
+    state: String(u8),
+    instructions: []const Instruction,
+    program_counter: usize = 0,
+    allocator: *mem.Allocator,
+
+    fn init(
+        allocator: *mem.Allocator,
+        lines: []const []const u8,
+        initial_state: []const u8,
+    ) !Self {
+        var instructions = try allocator.alloc(Instruction, lines.len);
+        var state = try String(u8).copyConst(allocator, initial_state);
+        for (lines) |line, i| {
+            instructions[i] = try Instruction.fromString(line);
+        }
+
+        return Self{
+            .state = state,
+            .instructions = instructions,
+            .allocator = allocator,
+        };
+    }
+
+    fn run(self: *Self) !void {
+        for (self.instructions) |i| {
+            try self.runInstruction(i);
+        }
+    }
+
+    fn runBackwards(self: *Self) !void {
+        var program_counter = self.instructions[self.instructions.len - 1];
+        while (program_counter > 0) : (program_counter -= 1) {
+            const instruction = self.instructions[program_counter];
+            try self.runInstruction(instruction);
+        }
+    }
+
+    fn step(self: *Self) !void {
+        const instruction = self.instructions[self.program_counter];
+        try self.runInstruction(instruction);
+    }
+
+    fn runInstruction(self: *Self, instruction: Instruction) !void {
+        switch (instruction) {
+            .SwapPosition => |swap| {
+                const t = self.state.__chars[swap.x];
+                self.state.__chars[swap.x] = self.state.__chars[swap.y];
+                self.state.__chars[swap.y] = t;
+            },
+            .SwapLetter => |swap| {
+                const maybe_x_index = self.state.find(swap.x);
+                const maybe_y_index = self.state.find(swap.y);
+                if (maybe_x_index != null and maybe_y_index != null) {
+                    const x_index = maybe_x_index.?;
+                    const y_index = maybe_y_index.?;
+                    const x = self.state.__chars[x_index];
+                    const y = self.state.__chars[y_index];
+                    self.state.__chars[x_index] = y;
+                    self.state.__chars[y_index] = x;
+                } else {
+                    return error.InvalidIndicesInSwapLetter;
+                }
+            },
+            .ReversePositions => |reverse| {
+                const x = reverse.x;
+                const y = reverse.y;
+
+                var state_slice = self.state.__chars[x..(y + 1)];
+                const reversed = try reverseSlice(self.allocator, state_slice);
+                mem.copy(u8, state_slice, reversed);
+            },
+            .RotateLeft => |left| {
+                try self.rotateLeft(left);
+            },
+            .RotateRight => |right| {
+                try self.rotateLeft(self.state.count - right);
+            },
+            .RotatePosition => |letter| {
+                const maybe_letter_index = self.state.find(letter);
+                if (maybe_letter_index) |letter_index| {
+                    const rotation = r: {
+                        if (letter_index >= 4) {
+                            break :r letter_index + 2;
+                        } else {
+                            break :r letter_index + 1;
+                        }
+                    };
+                    try self.rotateLeft(
+                        self.state.count - (rotation % self.state.count),
+                    );
+                }
+            },
+            .MovePosition => |move| {
+                const x_index = move.x;
+                const x = self.state.__chars[x_index];
+                const y_index = move.y;
+
+                self.state.delete(x_index, x_index + 1, .{});
+                try self.state.insertSlice(y_index, &[_]u8{x});
+            },
+        }
+        self.program_counter += 1;
+    }
+
+    fn rotateLeft(self: *Self, left: usize) !void {
+        var copy = try self.allocator.alloc(u8, self.state.count);
+        defer self.allocator.free(copy);
+        mem.copy(u8, copy, self.state.__chars);
+        for (self.state.__chars) |*c, i| {
+            const modded = (i + left) % self.state.count;
+            c.* = copy[modded];
+        }
+    }
+
+    fn reverseSlice(allocator: *mem.Allocator, slice: []const u8) ![]const u8 {
+        var reversed = try allocator.alloc(u8, slice.len);
+        var i: usize = slice.len;
+        while (i > 0) : (i -= 1) {
+            reversed[slice.len - i] = slice[i - 1];
+        }
+
+        return reversed;
+    }
+};
 
 const Instruction = union(enum) {
     const Self = @This();
@@ -131,18 +272,31 @@ const MovePositionData = struct {
     y: usize,
 };
 
-pub fn main() anyerror!void {
-    const lines = try utilities.splitIntoLines(heap.page_allocator, input);
-    for (lines) |l| {
-        debug.warn("l: {}\n", .{l});
-    }
-    debug.warn("Day 21:\n", .{});
-}
-
-test "test input parses" {
+test "test input steps correctly through instructions" {
     const lines = try utilities.splitIntoLines(heap.page_allocator, test_input);
-    for (lines) |l| {
-        const i = try Instruction.fromString(l);
-        debug.warn("i: {}\n", .{i});
-    }
+    var program = try Program.init(heap.page_allocator, lines, "abcde");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "ebcda");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "edcba");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "abcde");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "bcdea");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "bdeac");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "abdec");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "ecabd");
+
+    try program.step();
+    testing.expectEqualSlices(u8, program.state.sliceConst(), "decab");
 }

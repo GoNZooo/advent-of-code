@@ -5,6 +5,7 @@ const mem = std.mem;
 const fmt = std.fmt;
 const rand = std.rand;
 const assert = std.debug.assert;
+const debug = std.debug;
 
 pub const StringInitOptions = struct {
     initial_capacity: ?usize = null,
@@ -172,8 +173,13 @@ pub fn String(comptime T: type) type {
             if (new_capacity > self.capacity) {
                 characters = try self.allocator.realloc(characters, new_capacity);
             }
-            const slice_to_copy_forward = characters[position..self.count];
+            var slice_to_copy_forward = try self.allocator.alloc(T, self.count - position);
+            mem.copy(T, slice_to_copy_forward, characters[position..self.count]);
+
             const new_start_position = position + slice.len;
+            for (characters[new_start_position..(new_start_position + slice_to_copy_forward.len)]) |*c, i| {
+                c.* = slice_to_copy_forward[i];
+            }
             mem.copy(
                 T,
                 characters[new_start_position..(new_start_position + slice_to_copy_forward.len)],
@@ -297,6 +303,14 @@ pub fn String(comptime T: type) type {
             };
         }
 
+        fn find(self: Self, needle: T) ?usize {
+            for (self.__chars) |c, i| {
+                if (needle == c) return i;
+            }
+
+            return null;
+        }
+
         pub fn isEmpty(self: Self) bool {
             return self.count == 0;
         }
@@ -411,6 +425,14 @@ test "`insertSlice` inserts a string into an already created string" {
     testing.expectEqualSlices(u8, string.sliceConst(), "hellolo!");
     try string.insertSlice(5, ", bo");
     testing.expectEqualSlices(u8, string.sliceConst(), "hello, bolo!");
+
+    var string2 = try String(u8).copyConst(page_allocator, "3456789");
+    try string2.insertSlice(0, &[_]u8{ '1', '2' });
+    testing.expectEqualSlices(u8, string2.sliceConst(), "123456789");
+
+    var string3 = try String(u8).copyConst(page_allocator, "23456789");
+    try string3.insertSlice(0, &[_]u8{'1'});
+    testing.expectEqualSlices(u8, string3.sliceConst(), "123456789");
 }
 
 test "`insertSliceCopy` inserts a string into a copy of a `String`" {
