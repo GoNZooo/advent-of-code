@@ -303,7 +303,7 @@ pub fn String(comptime T: type) type {
             };
         }
 
-        fn find(self: Self, needle: T) ?usize {
+        pub fn find(self: Self, needle: T) ?usize {
             for (self.__chars) |c, i| {
                 if (needle == c) return i;
             }
