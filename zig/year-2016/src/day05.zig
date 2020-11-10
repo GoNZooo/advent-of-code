@@ -4,7 +4,7 @@ const mem = std.mem;
 const fmt = std.fmt;
 const testing = std.testing;
 
-const Md5 = std.crypto.Md5;
+const Md5 = std.crypto.hash.Md5;
 
 const input = "uqwqemis";
 const test_input = "abc";
@@ -58,7 +58,7 @@ fn findPositionData(
     var character: u8 = undefined;
     while (true) : (n.* += 1) {
         const concatted_string = try buildConcatString(secret, n.*, concat_buffer);
-        Md5.hash(concatted_string, digest_bytes);
+        Md5.hash(concatted_string, digest_bytes[0..16], .{});
         const initial = firstNibbles(N, digest_bytes);
         const comparison_string = initial[0..(N - 2)];
         const zeroes = &([_]u8{0} ** (N - 2));
@@ -111,7 +111,7 @@ fn findPasswordCharacter(
     var sixth_character: u8 = undefined;
     while (true) : (n.* += 1) {
         const concatted_string = try buildConcatString(secret, n.*, concat_buffer);
-        Md5.hash(concatted_string, digest_bytes);
+        Md5.hash(concatted_string, digest_bytes[0..16], .{});
         const initial = firstNibbles(N, digest_bytes);
         const comparison_string = initial[0..(N - 1)];
         const zeroes = &([_]u8{0} ** (N - 1));

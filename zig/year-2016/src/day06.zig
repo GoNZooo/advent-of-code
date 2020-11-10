@@ -125,9 +125,9 @@ fn MostCommon(comptime N: usize) type {
         fn addCharacter(self: *Self, position: usize, character: u8) !void {
             const res = try self.frequencies[position].getOrPut(character);
             if (res.found_existing) {
-                res.kv.value += 1;
+                res.entry.value += 1;
             } else {
-                res.kv.value = 1;
+                res.entry.value = 1;
             }
         }
     };
