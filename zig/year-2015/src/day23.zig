@@ -103,7 +103,7 @@ const Instruction = union(enum) {
         self: Self,
         comptime formatting: []const u8,
         options: fmt.FormatOptions,
-        out_stream: var,
+        out_stream: anytype,
     ) !void {
         return switch (self) {
             .Increment => |register| {

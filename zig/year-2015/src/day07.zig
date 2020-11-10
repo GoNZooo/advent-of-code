@@ -51,7 +51,7 @@ const Operand = union(enum) {
         value: Operand,
         comptime format_string: []const u8,
         options: std.fmt.FormatOptions,
-        context: var,
+        context: anytype,
         comptime Errors: type,
         output: fn (@TypeOf(context), []const u8) Errors!void,
     ) Errors!void {
@@ -150,7 +150,7 @@ const Instruction = union(enum) {
         value: Instruction,
         comptime format_string: []const u8,
         options: std.fmt.FormatOptions,
-        context: var,
+        context: anytype,
         comptime Errors: type,
         output: fn (@TypeOf(context), []const u8) Errors!void,
     ) Errors!void {
@@ -205,7 +205,7 @@ const Store = struct {
     }
 
     pub fn get(self: Store, destination: []const u8) Instruction {
-        return self.values.getValue(destination) orelse
+        return self.values.get(destination) orelse
             @panic("Trying to get non-existant destination");
     }
 
@@ -214,7 +214,7 @@ const Store = struct {
     }
 
     pub fn execute(self: *Store, destination: []const u8) !u16 {
-        const cached_value = self.cache.getValue(destination);
+        const cached_value = self.cache.get(destination);
 
         if (cached_value) |value| {
             return value;
@@ -236,7 +236,7 @@ const Store = struct {
         return switch (operand) {
             .Literal => |x| x,
             .Identifier => |id| ret: {
-                const cached_value = self.cache.getValue(id);
+                const cached_value = self.cache.get(id);
 
                 if (cached_value) |value| {
                     break :ret value;

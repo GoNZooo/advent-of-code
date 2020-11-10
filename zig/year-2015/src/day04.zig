@@ -3,7 +3,7 @@ const mem = std.mem;
 const fmt = std.fmt;
 const testing = std.testing;
 
-const Md5 = std.crypto.Md5;
+const Md5 = std.crypto.hash.Md5;
 
 const input = "iwrupvqb";
 const test_input = "abcdef";
@@ -26,7 +26,7 @@ fn findInitialZeroes(comptime N: u8, digest_bytes: []u8, concat_buffer: []u8) !u
 
     while (true) : (n += 1) {
         const concatted_string = try buildConcatString(input, n, concat_buffer);
-        Md5.hash(concatted_string, digest_bytes);
+        Md5.hash(concatted_string, digest_bytes[0..16], .{});
         const initial = firstNibbles(N, digest_bytes);
 
         if (mem.eql(u8, &initial, &([_]u8{0} ** N))) {
